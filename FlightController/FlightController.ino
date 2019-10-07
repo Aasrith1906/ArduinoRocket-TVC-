@@ -118,7 +118,7 @@ void setup() {
     Servo_tvc_x.write(i);
     Servo_tvc_y.write(i);
 
-    delay(50);
+    delay(25);
     
    }
 
@@ -127,18 +127,29 @@ void setup() {
     Servo_tvc_x.write(i);
     Servo_tvc_y.write(i);
 
-    delay(50);
+    delay(25);
     
    }
 
    Servo_tvc_x.write(90);
    Servo_tvc_y.write(90); 
 
+   Serial.println("all sensors functioning testing done...");
+
    bmp280.awaitMeasurement();
+
+    float temperature;
+    //bmp280.getTemperature(temperature);
+
+    float pascal;
+    bmp280.getPressure(pascal);
 
    bmp280.getAltitude(altitude_base);
 
-   print("base altitude is : " , altitude_base);
+   bmp280.triggerMeasurement();
+   
+   Serial.println("base altitude is : ");
+   Serial.print(altitude_base);
 }
 
 void loop() {
