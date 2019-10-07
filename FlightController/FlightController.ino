@@ -23,6 +23,8 @@ float pressure , altitude , altitude_base;
 
 bool START_STATE = false;
 
+int angle_x , angle_y , prev_x , prev_y;
+
 int button_state;
 
 Servo Servo_tvc_x;
@@ -118,7 +120,7 @@ void setup() {
     Servo_tvc_x.write(i);
     Servo_tvc_y.write(i);
 
-    delay(25);
+    //delay(25);
     
    }
 
@@ -127,7 +129,7 @@ void setup() {
     Servo_tvc_x.write(i);
     Servo_tvc_y.write(i);
 
-    delay(25);
+    //delay(25);
     
    }
 
@@ -139,7 +141,7 @@ void setup() {
    bmp280.awaitMeasurement();
 
     float temperature;
-    //bmp280.getTemperature(temperature);
+    bmp280.getTemperature(temperature);
 
     float pascal;
     bmp280.getPressure(pascal);
@@ -150,9 +152,83 @@ void setup() {
    
    Serial.println("base altitude is : ");
    Serial.print(altitude_base);
+
+   prev_x = 90;
+   prev_y = 90;
 }
 
 void loop() {
-  
 
+  Wire.beginTransmission(mpu_addr);
+  Wire.write(0x3B);
+  Wire.endTransmission(false);
+  Wire.requestFrom(mpu_addr,14,true);
+  ax=Wire.read()<<8|Wire.read();
+  ay=Wire.read()<<8|Wire.read();
+  az=Wire.read()<<8|Wire.read();
+  float Temp=Wire.read()<<8|Wire.read();
+  gx=Wire.read()<<8|Wire.read();
+  gy=Wire.read()<<8|Wire.read();
+  gz=Wire.read()<<8|Wire.read();
+
+  ax = (ax/16384)*9.81;
+  ay = (ay/16384)*9.81;
+  az = (az/16384)*9.81;
+
+  bmp280.awaitMeasurement();
+
+  bmp280.getTemperature(Temp);
+  
+  float pascal;
+  bmp280.getPressure(pascal);
+
+  static float alt;
+  bmp280.getAltitude(alt);
+
+  alt = alt - altitude_base;
+
+  // code to debug whether sensors are reporting accurate data
+  /*Serial.println("ax :");
+  Serial.print(ax);
+  Serial.print("ay :");
+  Serial.print(ay);
+  Serial.print("az :");
+  Serial.print(az);
+  Serial.print("altitude_base:");
+  Serial.print(altitude_base);
+  Serial.print("altitude:");
+  Serial.print(alt);
+  Serial.println();
+
+  delay(500);*/
+
+
+  int angle_x  = GetAngle(az,ax,0);
+
+  
+  if(angle_x != prev_x)
+  {
+    prev_x = angle_x;
+
+    Servo_tvc_x.write(angle_x);
+  }
+
+  Serial.println(angle_x);
+
+  
+  
+}
+
+
+float GetAngle(float a2 , float a1,int servo_)
+{
+  int angle_dir = (int)atan(a2/a1);
+
+  angle_dir = (angle_dir/PI)*180;
+
+  int angle_corrected = angle_dir;
+
+  angle_corrected = map(angle_corrected,-90 , 90 , 0 , 180);
+
+  return angle_corrected;
 }
