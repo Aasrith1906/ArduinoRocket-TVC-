@@ -338,11 +338,11 @@ float GetAngle(float a , int servo_)
   {
     if(servo_ == 1)
     {
-      float angle = map(a , -17000,17000 , 179 , 0);
+       angle = map(a , -17000,17000 , 179 , 0);
     }
     else
     {
-      float angle = map(a , 17000 , -17000 , 179 , 0);
+      angle = map(a , 17000 , -17000 , 179 , 0);
     }
   }
   else
