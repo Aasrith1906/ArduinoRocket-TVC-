@@ -2,24 +2,46 @@
 #include <Servo.h>
 #include "i2c.h"
 #include "i2c_BMP280.h"
-
+#include <SD.h>
+#include <SPI.h>
 
 // for tvc take reference coordinate axis as y
 // tanx = a2/a1 , x = tan-1(a2/a1)
 // do 90-x
 
+/*
+ * SCL - A5
+ * SDA - A4
+ * MOSI - 11
+ * MISO -12 
+ * SCK - 13
+ * MPU6050 INT - 2 
+*/
+
+File DataFile;
+
 const int mpu_addr = 0x68;
+
+const int cs_pin = 10;
 
 BMP280 bmp280;
 
 float ax , ay , az , temp , gx , gy , gz;
 float pressure , altitude , altitude_base;
 
-#define SERVO_TVC_X 7
-#define SERVO_TVC_Y 10
+#define SERVO_TVC_X 6
+#define SERVO_TVC_Y 5
 #define Start_button 9
-#define LED_RED 12
-#define LED_GREEN 11
+#define LED_RED 7
+#define LED_GREEN 8
+
+#ifndef servo_x
+  #define servo_x 1
+#endif
+
+#ifndef servo_y
+  #define servo_y 0
+#endif
 
 bool START_STATE = false;
 
@@ -31,9 +53,17 @@ Servo Servo_tvc_x;
 Servo Servo_tvc_y;
 
 
-float GetAngle(float a1 , float a2);
+float GetAngle(float a , int servo_);
 float mod(float x);
 void ChangeServoAngle(int prev_angle , int current_angle , Servo servo);
+bool CheckAltitudeChange(struct altitude alt);
+
+struct Altitude
+{
+  float prev_altitude;
+  float current_altitude;
+  float base_altitude;
+};
 
 void setup() {
 
@@ -42,6 +72,7 @@ void setup() {
   pinMode(Start_button , INPUT);
   pinMode(LED_RED , OUTPUT);
   pinMode(LED_GREEN , OUTPUT);
+  pinMode(cs_pin , OUTPUT);
 
   button_state = digitalRead(Start_button);
 
@@ -105,6 +136,25 @@ void setup() {
          }      
     }
 
+    Serial.println("initializing SD card");
+
+    if(SD.begin())
+    {
+       Serial.println("SD card ready");
+    }
+    else 
+    {
+      Serial.println("SD card failed"); 
+
+      while(true)
+         {
+          digitalWrite(LED_GREEN, LOW);
+          digitalWrite(LED_RED , HIGH);
+          delay(500);
+          digitalWrite(LED_RED , LOW);
+         }      
+    }
+
     bmp280.setEnabled(0);
     bmp280.triggerMeasurement();
 
@@ -145,8 +195,8 @@ void setup() {
     float temperature;
     bmp280.getTemperature(temperature);
 
-    float pascal;
-    bmp280.getPressure(pascal);
+    float pressure;
+    bmp280.getPressure(pressure);
 
    bmp280.getAltitude(altitude_base);
 
@@ -173,16 +223,12 @@ void loop() {
   gy=Wire.read()<<8|Wire.read();
   gz=Wire.read()<<8|Wire.read();
 
-   ax = (ax/16384)*9.81;
-   ay = (ay/16384)*9.81;
-   az = (az/16384)*9.81;
-
   bmp280.awaitMeasurement();
 
   bmp280.getTemperature(Temp);
   
-  float pascal;
-  bmp280.getPressure(pascal);
+  float pressure;
+  bmp280.getPressure(pressure);
 
   static float alt;
   bmp280.getAltitude(alt);
@@ -204,23 +250,43 @@ void loop() {
 
   delay(500);*/
 
-  ax = mod(ax);
-  ay = mod(ay);
-  az = mod(az);
-  int angle_x  = GetAngle(az,ax,0);
+  prev_x = TVS(ax , Servo_tvc_x , servo_x , prev_x);
 
-  
-  if(angle_x != prev_x)
+  if(prev_x == -1)
   {
-    prev_x = angle_x;
-
-    Servo_tvc_x.write(angle_x);
+    digitalWrite(LED_RED , HIGH);
+    digitalWrite(LED_GREEN , LOW);
   }
 
-  Serial.println(ax);
+  prev_y = TVS(ay , Servo_tvc_y , servo_y , prev_y);
 
+  if(prev_y == -1)
+  {
+    digitalWrite(LED_RED , HIGH);
+    digitalWrite(LED_GREEN , LOW);
+  }
   
-  
+  LogData(ax , ay , az , alt , pressure , Temp);
+}
+
+int TVS(float a , Servo servo , int servo_ , int prev_angle)
+{
+   float angle = GetAngle(a , servo_);
+
+   if(angle == -1)
+   {
+      return -1;
+   }
+
+   if(angle != prev_angle)
+   {
+    ChangeServoAngle(prev_angle ,angle , servo);
+     return angle;
+   }
+   else
+   {
+    return prev_angle;
+   }
 }
 
 void ChangeServoAngle(int prev_angle , int current_angle , Servo servo)
@@ -264,7 +330,31 @@ float mod(float x)
   return x;
 }
 
-float GetAngle(float a2 , float a1,int servo_)
+float GetAngle(float a , int servo_)
+{
+  float angle;
+  
+  if(servo_ != 0)
+  {
+    if(servo_ == 1)
+    {
+      float angle = map(a , -17000,17000 , 179 , 0);
+    }
+    else
+    {
+      float angle = map(a , 17000 , -17000 , 179 , 0);
+    }
+  }
+  else
+  {
+    angle = -1;
+  }
+
+  return angle;
+  
+}
+
+/*float GetAngle(float a2 , float a1,int servo_)
 {
   float angle_dir = atan(a2/a1);
 
@@ -280,11 +370,11 @@ float GetAngle(float a2 , float a1,int servo_)
   {
     
     angle_corrected = map(angle_corrected,-90 , 90 , 0 , 180);
-  }*/
+  }
     
   
   return angle_corrected;
-}
+}*/
 
 
 
@@ -304,7 +394,7 @@ bool Start()
 //CHECK THRUST AND IF +VE DEPLOY PARACHUTE
 void CheckThrust(float az)
 {
-  if(az)
+  if(az>0)
   {
     DeployParachute();
   }
@@ -318,7 +408,41 @@ void DeployParachute()
 }
 
 //WRITE DATA TO MICRO SD CARD
-void LogData()
+void LogData(float ax ,float ay ,float az ,float alt ,float temp ,float pressure )
 {
-  
+    DataFile = SD.open("Data.txt",FILE_WRITE);
+
+    if(DataFile)
+    {
+      DataFile.println(ax);
+      DataFile.print(",");
+      DataFile.print(ay);
+      DataFile.print(",");
+      DataFile.print(az);
+      DataFile.print(",");
+      DataFile.print(alt);
+      DataFile.print(",");
+      DataFile.print(temp);
+      DataFile.print(",");
+      DataFile.print(pressure);
+      DataFile.println();
+
+      DataFile.close();
+    }
+    else
+    {
+      Serial.println("ERROR OPENING FILE");
+
+    while(true)
+    {
+      
+      digitalWrite(LED_GREEN, LOW);
+      digitalWrite(LED_RED , HIGH);
+      delay(500);
+      digitalWrite(LED_RED , LOW);
+      
+    }
+    
+    }
+      
 }
