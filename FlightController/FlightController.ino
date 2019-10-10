@@ -32,6 +32,8 @@ Servo Servo_tvc_y;
 
 
 float GetAngle(float a1 , float a2);
+float mod(float x);
+void ChangeServoAngle(int prev_angle , int current_angle , Servo servo);
 
 void setup() {
 
@@ -48,7 +50,7 @@ void setup() {
     START_STATE = true;
   }
 
-  while(!START_STATE)
+  while(START_STATE!=true)
   {
     button_state = digitalRead(Start_button);
 
@@ -171,9 +173,9 @@ void loop() {
   gy=Wire.read()<<8|Wire.read();
   gz=Wire.read()<<8|Wire.read();
 
-  ax = (ax/16384)*9.81;
-  ay = (ay/16384)*9.81;
-  az = (az/16384)*9.81;
+   ax = (ax/16384)*9.81;
+   ay = (ay/16384)*9.81;
+   az = (az/16384)*9.81;
 
   bmp280.awaitMeasurement();
 
@@ -202,7 +204,9 @@ void loop() {
 
   delay(500);*/
 
-
+  ax = mod(ax);
+  ay = mod(ay);
+  az = mod(az);
   int angle_x  = GetAngle(az,ax,0);
 
   
@@ -213,22 +217,108 @@ void loop() {
     Servo_tvc_x.write(angle_x);
   }
 
-  Serial.println(angle_x);
+  Serial.println(ax);
 
   
   
 }
 
+void ChangeServoAngle(int prev_angle , int current_angle , Servo servo)
+{
+   if(prev_angle != current_angle)
+   {
+     if(prev_angle>current_angle)
+     {
+       for(int i = prev_angle; i>=current_angle; i--)
+       {
+         servo.write(i);
+         delay(10);
+       }
+     }
+     else
+     {
+      for(int i = prev_angle; i<= current_angle; i++)
+      {
+        servo.write(i);
+        delay(10);
+      }
+     }
+   }
+   else
+   {
+    servo.write(prev_angle);
+   }
+}
+
+float mod(float x)
+{
+  if(x<0)
+  {
+    x = x*-1;
+  }
+  else
+  {
+    x = x;
+  }
+
+  return x;
+}
 
 float GetAngle(float a2 , float a1,int servo_)
 {
-  int angle_dir = (int)atan(a2/a1);
+  float angle_dir = atan(a2/a1);
 
   angle_dir = (angle_dir/PI)*180;
 
-  int angle_corrected = angle_dir;
+  float angle_corrected = angle_dir - 90;
 
-  angle_corrected = map(angle_corrected,-90 , 90 , 0 , 180);
-
+  /*if(servo_ == 1)
+  {
+    angle_corrected = map(angle_corrected , -90 , 0 , 90 , 180);
+  }
+  else
+  {
+    
+    angle_corrected = map(angle_corrected,-90 , 90 , 0 , 180);
+  }*/
+    
+  
   return angle_corrected;
+}
+
+
+
+//RETURN ALTITUDE
+float GetAltitude()
+{
+  
+}
+
+//START FLIGHT FUNCTION
+
+bool Start()
+{
+  
+}
+
+//CHECK THRUST AND IF +VE DEPLOY PARACHUTE
+void CheckThrust(float az)
+{
+  if(az)
+  {
+    DeployParachute();
+  }
+  
+}
+
+//DEPLOY PARACHUTE FUNCTION
+void DeployParachute()
+{
+  
+}
+
+//WRITE DATA TO MICRO SD CARD
+void LogData()
+{
+  
 }

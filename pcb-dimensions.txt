@@ -1,0 +1,4 @@
+mpu6050 - 2cm x 1.5cm
+bmp280 - 1.5cm x 1cm
+sd card reader(HW-125) - 4cm x 2cm
+arduino nano - 4cm x 1.5cm 
