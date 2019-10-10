@@ -1,3 +1,17 @@
+/* The following is the 2nd version of the arduino flight controller
+ *  this code has been written by Aasrith Chennapragada
+ *  first it tests whether all the hardware is working or not
+ *  if all the tests are passed , the rocket checks for a change in the altitude , signifiying a launch
+ *  after launch has been detected , the rocket will start its thrust vector control 
+ *  it will do so until until the y axis acceleration is negative and the altitude is decreasing
+ *  after it is detected that the rocket is falling it will deploy the parachute
+ *  
+ *  All the flight data information like acceleration , altitude , pressure inside , temperature , is recorded and stored on an
+    SD card
+ */
+
+
+
 #include <Wire.h>
 #include <Servo.h>
 #include "i2c.h"
@@ -76,10 +90,15 @@ void setup() {
 
   Serial.begin(9600);
 
+  // testing LED'S
+
   pinMode(Start_button , INPUT);
   pinMode(LED_RED , OUTPUT);
   pinMode(LED_GREEN , OUTPUT);
   pinMode(cs_pin , OUTPUT);
+
+
+  //Waiting for a button input to start the flight controller
 
   button_state = digitalRead(Start_button);
 
@@ -98,6 +117,8 @@ void setup() {
     }
   }
 
+  //initializing testing 
+  
   Serial.println("initializing flight controller...");
 
   digitalWrite(LED_RED , HIGH);
@@ -105,6 +126,8 @@ void setup() {
   delay(1000);
   digitalWrite(LED_RED , LOW);
   digitalWrite(LED_GREEN , HIGH);
+
+  //Initializing MPU6050 , testing
 
   Wire.begin();
   Wire.beginTransmission(mpu_addr);
@@ -126,6 +149,8 @@ void setup() {
   Wire.write(0);
   Wire.endTransmission(true);
 
+  //Initializing BMP280 (altimeter and barometer)
+
    if (bmp280.initialize())
    {
     Serial.println("altimeter barometer (bmp280) found");
@@ -143,6 +168,8 @@ void setup() {
          }      
     }
 
+
+   //Initializing SD card
     Serial.println("initializing SD card");
 
     if(SD.begin())
@@ -161,9 +188,11 @@ void setup() {
           digitalWrite(LED_RED , LOW);
          }      
     }
-
+    
     bmp280.setEnabled(0);
     bmp280.triggerMeasurement();
+
+    //Testing servos
 
    Serial.println("testing servos");
 
@@ -179,7 +208,7 @@ void setup() {
     Servo_tvc_x.write(i);
     Servo_tvc_z.write(i);
 
-    //delay(25);
+    delay(10);
     
    }
 
@@ -188,10 +217,12 @@ void setup() {
     Servo_tvc_x.write(i);
     Servo_tvc_z.write(i);
 
-    //delay(25);
+    delay(10);
     
    }
 
+   //Centering servos
+   
    Servo_tvc_x.write(90);
    Servo_tvc_z.write(90); 
 
@@ -200,7 +231,9 @@ void setup() {
 
    Serial.println("all sensors functioning testing done...");
 
-   bmp280.awaitMeasurement();
+   // waiting for a change in altitude which signifies launch
+
+   /*bmp280.awaitMeasurement();
 
     float temperature;
     bmp280.getTemperature(temperature);
@@ -213,7 +246,7 @@ void setup() {
    bmp280.triggerMeasurement();
    
    Serial.println("base altitude is : ");
-   Serial.print(altitude_base);
+   Serial.print(altitude_base);*/
 
    
 
@@ -260,6 +293,8 @@ void loop() {
   
   //if(start_)
   //{
+
+    // Read all the data from the sensors
     
       float Temp;
     
@@ -303,6 +338,8 @@ void loop() {
       Serial.println();
     
       delay(500);*/
+
+      // TVS on the x axis
     
       prev_x = TVS(ax , Servo_tvc_x , servo_x , prev_x);
     
@@ -311,7 +348,9 @@ void loop() {
         digitalWrite(LED_RED , HIGH);
         digitalWrite(LED_GREEN , LOW);
       }
-    
+
+
+      //TVS on the z axis
       prev_z = TVS(az , Servo_tvc_z , servo_z , prev_z);
     
       if(prev_z == -1)
