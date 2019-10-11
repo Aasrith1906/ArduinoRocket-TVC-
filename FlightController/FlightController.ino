@@ -233,10 +233,10 @@ void setup() {
 
    // waiting for a change in altitude which signifies launch
 
-   /*bmp280.awaitMeasurement();
+   bmp280.awaitMeasurement();
 
-    float temperature;
-    bmp280.getTemperature(temperature);
+    float Temp;
+    bmp280.getTemperature(Temp);
 
     float pressure;
     bmp280.getPressure(pressure);
@@ -246,11 +246,11 @@ void setup() {
    bmp280.triggerMeasurement();
    
    Serial.println("base altitude is : ");
-   Serial.print(altitude_base);*/
+   Serial.print(altitude_base);
 
    
 
-  float Temp;
+  //float Temp;
 
   bmp280.awaitMeasurement();
 
@@ -358,12 +358,18 @@ void loop() {
         digitalWrite(LED_RED , HIGH);
         digitalWrite(LED_GREEN , LOW);
       }
+
+      // Logging data
       
       LogData(ax , ay , az , alt , pressure , Temp);
 
   //}
 
 }
+
+
+//Final TVS function returns the angle at which the servo is pointing
+
 
 int TVS(float a , Servo servo , int servo_ , int prev_angle)
 {
@@ -384,6 +390,8 @@ int TVS(float a , Servo servo , int servo_ , int prev_angle)
     return prev_angle;
    }
 }
+
+//Function to change th angle of a servo (in a very specific way)
 
 void ChangeServoAngle(int prev_angle , int current_angle , Servo servo)
 {
@@ -425,6 +433,9 @@ float mod(float x)
 
   return x;
 }
+
+
+//Gets the TVS angle
 
 float GetAngle(float a , int servo_)
 {
@@ -512,12 +523,9 @@ bool Start(float base_altitude,float altitude)
 } 
 
 //CHECK THRUST AND IF +VE DEPLOY PARACHUTE
-void CheckThrust(float az , struct altitude alt)
+void CheckThrust(float ay , struct altitude alt)
 {
-  if(az>0 && alt.prev_alt > alt.current_alt)
-  {
-    DeployParachute();
-  }
+ 
   
 }
 
@@ -526,6 +534,14 @@ void DeployParachute()
 {
   
 }
+
+//ABORT FUNCTION IF AN ERROR IS DETECTED MID FLIGHT
+
+void Abort()
+{
+
+}
+
 
 //WRITE DATA TO MICRO SD CARD
 void LogData(float ax ,float ay ,float az ,float alt ,float temp ,float pressure )
