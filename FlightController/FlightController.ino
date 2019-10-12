@@ -93,10 +93,27 @@ Servo Servo_tvc_x;
 Servo Servo_tvc_z;
 
 
-float GetAngle(float a , int servo_);
+/*float GetAngle(float a , int servo_);
 float mod(float x);
 void ChangeServoAngle(int prev_angle , int current_angle , Servo servo);
-bool CheckAltitudeChange(struct altitude alt);
+bool CheckAltitudeChange(struct altitude alt);*/
+
+
+int TVS(float a , Servo servo , int servo_ , int prev_angle , float base_altitude);
+
+void ChangeServoAngle(int prev_angle , int current_angle , Servo servo);
+
+float GetAngle(float a , int servo_);
+
+float GetAltitude(float base_altitude);
+
+bool Start(float base_altitude,float altitude);
+
+void DeployParachute(float base_altitude);
+
+bool CheckAngle(int angle);
+
+void LogData(float ax ,float ay ,float az ,float alt ,float temp ,float pressure );
 
 struct altitude
 {
@@ -105,7 +122,7 @@ struct altitude
   float base_altitude;
 };
 
-//struct altitude alt;
+struct altitude alt_change;
 
 void setup() {
 
@@ -273,6 +290,10 @@ void setup() {
    Serial.println("base altitude is : ");
    Serial.print(altitude_base);
 
+   alt_change.prev_alt = 0;
+   alt_change.current_alt = 0;
+   alt_change.base_altitude = altitude_base;
+
    
 
   //float Temp;
@@ -333,7 +354,10 @@ void loop() {
       static float alt;
       bmp280.getAltitude(alt);
     
-      float altitude = altitude - altitude_base;
+      float altitude = alt - altitude_base;
+
+
+      
     
       Wire.beginTransmission(mpu_addr);
       Wire.write(0x3B);
@@ -384,6 +408,15 @@ void loop() {
       {
         digitalWrite(LED_RED , HIGH);
         digitalWrite(LED_GREEN , LOW);
+      }
+
+      // checking if apogee has been reached , if so release parachute
+      alt_change.prev_alt = alt_change.current_alt;
+      alt_change.current_alt = altitude;
+
+      if(ApogeeReached(alt_change))
+      {
+        DeployParachute(alt_change.base_altitude);
       }
 
       // Logging data
@@ -570,6 +603,18 @@ void CheckThrust(float ay , struct altitude alt)
   
 }
 
+bool ApogeeReached(struct altitude alt)
+{
+  if(alt.current_alt<alt.prev_alt)
+  {
+    return true;
+  }
+  else
+  {
+   return false;
+  }
+}
+
 
 
 //DEPLOY PARACHUTE FUNCTION
@@ -582,16 +627,21 @@ void DeployParachute(float base_altitude)
    while(alt>0)
    {
     digitalWrite(LED_RED , HIGH);
-    digitalWrite(LED_GREEEN , HIGH);
+    digitalWrite(LED_GREEN , HIGH);
 
     delay(500);
 
     digitalWrite(LED_RED , LOW);
-    digitalWrite(LED_GREEEN , LOW);
+    digitalWrite(LED_GREEN , LOW);
    }
 
    digitalWrite(LED_RED , LOW);
    digitalWrite(LED_GREEN , HIGH);
+
+   while(true)
+   {
+    
+   }
 }
 
 /*//ABORT FUNCTION IF AN ERROR IS DETECTED MID FLIGHT
