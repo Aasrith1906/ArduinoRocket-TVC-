@@ -36,18 +36,39 @@ File DataFile;
 
 const int mpu_addr = 0x68;
 
-const int cs_pin = 10;
 
 BMP280 bmp280;
 
 float ax , ay , az , temp , gx , gy , gz;
 float pressure , altitude , altitude_base;
 
-#define SERVO_TVC_X 6
-#define SERVO_TVC_Y 5
-#define Start_button 9
-#define LED_RED 7
-#define LED_GREEN 8
+#ifndef SERVO_TVC_X 
+  #define SERVO_TVC_X 6
+#endif
+
+#ifndef SERVO_TVC_Z
+  #define SERVO_TVC_Z 5
+#endif
+
+#ifndef Start_button
+  #define Start_button 9
+#endif
+
+#ifndef LED_RED
+  #define LED_RED 7
+#endif
+
+#ifndef LED_GREEN 
+  #define LED_GREEN 8
+#endif
+
+#ifndef PARACHUTE_RELAY_PIN
+  #define PARACHUTE_RELAY_PIN 4
+#endif
+
+#ifndef CS_PIN 
+  #define CS_PIN 4
+#endif
 
 /*#ifndef servo_x
   #define servo_x 1
@@ -90,12 +111,13 @@ void setup() {
 
   Serial.begin(9600);
 
-  // testing LED'S
+  
 
   pinMode(Start_button , INPUT);
   pinMode(LED_RED , OUTPUT);
   pinMode(LED_GREEN , OUTPUT);
-  pinMode(cs_pin , OUTPUT);
+  pinMode(CS_PIN , OUTPUT);
+  pinMode(PARACHUTE_RELAY_PIN , OUTPUT);
 
 
   //Waiting for a button input to start the flight controller
@@ -118,8 +140,11 @@ void setup() {
   }
 
   //initializing testing 
+
   
   Serial.println("initializing flight controller...");
+
+  // testing LED'S
 
   digitalWrite(LED_RED , HIGH);
   digitalWrite(LED_GREEN, LOW);
@@ -198,7 +223,7 @@ void setup() {
 
 
    Servo_tvc_x.attach(SERVO_TVC_X);
-   Servo_tvc_z.attach(SERVO_TVC_Y);
+   Servo_tvc_z.attach(SERVO_TVC_Z);
 
    Servo_tvc_x.write(90);
    Servo_tvc_z.write(90);
@@ -341,7 +366,7 @@ void loop() {
 
       // TVS on the x axis
     
-      prev_x = TVS(ax , Servo_tvc_x , servo_x , prev_x);
+      prev_x = TVS(ax , Servo_tvc_x , servo_x , prev_x , altitude_base);
     
       if(prev_x == -1)
       {
@@ -351,7 +376,9 @@ void loop() {
 
 
       //TVS on the z axis
-      prev_z = TVS(az , Servo_tvc_z , servo_z , prev_z);
+      //prev_z = TVS(az , Servo_tvc_z , servo_z , prev_z);
+      
+      prev_z = TVS(az , Servo_tvc_z , 1 , prev_z , altitude_base);
     
       if(prev_z == -1)
       {
@@ -371,7 +398,7 @@ void loop() {
 //Final TVS function returns the angle at which the servo is pointing
 
 
-int TVS(float a , Servo servo , int servo_ , int prev_angle)
+int TVS(float a , Servo servo , int servo_ , int prev_angle , float base_altitude)
 {
    float angle = GetAngle(a , servo_);
 
@@ -382,8 +409,22 @@ int TVS(float a , Servo servo , int servo_ , int prev_angle)
 
    if(angle != prev_angle)
    {
-    ChangeServoAngle(prev_angle ,angle , servo);
+
+    if(!CheckAngle(angle))
+    {
+      
+     ChangeServoAngle(prev_angle ,angle , servo);
+      
      return angle;
+     
+    }
+
+    else
+    {
+      DeployParachute(base_altitude);
+    }
+     
+    
    }
    else
    {
@@ -522,24 +563,56 @@ bool Start(float base_altitude,float altitude)
     
 } 
 
-//CHECK THRUST AND IF +VE DEPLOY PARACHUTE
+//CHECK THRUST(CHECK DIRECTION OF ROCKET) AND IF +VE DEPLOY PARACHUTE
 void CheckThrust(float ay , struct altitude alt)
 {
  
   
 }
 
+
+
 //DEPLOY PARACHUTE FUNCTION
-void DeployParachute()
+void DeployParachute(float base_altitude)
 {
-  
+   digitalWrite(PARACHUTE_RELAY_PIN , HIGH);
+
+   float alt = GetAltitude(base_altitude);
+
+   while(alt>0)
+   {
+    digitalWrite(LED_RED , HIGH);
+    digitalWrite(LED_GREEEN , HIGH);
+
+    delay(500);
+
+    digitalWrite(LED_RED , LOW);
+    digitalWrite(LED_GREEEN , LOW);
+   }
+
+   digitalWrite(LED_RED , LOW);
+   digitalWrite(LED_GREEN , HIGH);
 }
 
-//ABORT FUNCTION IF AN ERROR IS DETECTED MID FLIGHT
+/*//ABORT FUNCTION IF AN ERROR IS DETECTED MID FLIGHT
 
 void Abort()
 {
 
+}*/
+
+
+bool CheckAngle(int angle)
+{
+  if(angle>135 || angle<45)
+  {
+    return true;
+  }
+
+  else
+  {
+    return false;
+  }
 }
 
 
