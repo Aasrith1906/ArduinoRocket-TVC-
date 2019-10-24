@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{7846F2A9-2451-430C-93F4-457EDCFC761B}</ProjectGuid>
+    <ProjectGuid>{887FC660-E4D9-4C22-8423-56277D2816DE}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>FlightAnalysisSoftware</RootNamespace>
-    <AssemblyName>FlightAnalysisSoftware</AssemblyName>
+    <RootNamespace>FlightAnalysiisSoftware</RootNamespace>
+    <AssemblyName>FlightAnalysiisSoftware</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -52,6 +52,7 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

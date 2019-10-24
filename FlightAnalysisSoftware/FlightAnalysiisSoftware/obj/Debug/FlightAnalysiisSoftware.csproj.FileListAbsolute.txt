@@ -1,0 +1,8 @@
+E:\Code\git reps\ArduinoRocket(TVC)\ArduinoRocket-TVC-\FlightAnalysisSoftware\FlightAnalysiisSoftware\bin\Debug\FlightAnalysiisSoftware.exe.config
+E:\Code\git reps\ArduinoRocket(TVC)\ArduinoRocket-TVC-\FlightAnalysisSoftware\FlightAnalysiisSoftware\bin\Debug\FlightAnalysiisSoftware.exe
+E:\Code\git reps\ArduinoRocket(TVC)\ArduinoRocket-TVC-\FlightAnalysisSoftware\FlightAnalysiisSoftware\bin\Debug\FlightAnalysiisSoftware.pdb
+E:\Code\git reps\ArduinoRocket(TVC)\ArduinoRocket-TVC-\FlightAnalysisSoftware\FlightAnalysiisSoftware\obj\Debug\FlightAnalysiisSoftware.Properties.Resources.resources
+E:\Code\git reps\ArduinoRocket(TVC)\ArduinoRocket-TVC-\FlightAnalysisSoftware\FlightAnalysiisSoftware\obj\Debug\FlightAnalysiisSoftware.csproj.GenerateResource.cache
+E:\Code\git reps\ArduinoRocket(TVC)\ArduinoRocket-TVC-\FlightAnalysisSoftware\FlightAnalysiisSoftware\obj\Debug\FlightAnalysiisSoftware.csproj.CoreCompileInputs.cache
+E:\Code\git reps\ArduinoRocket(TVC)\ArduinoRocket-TVC-\FlightAnalysisSoftware\FlightAnalysiisSoftware\obj\Debug\FlightAnalysiisSoftware.exe
+E:\Code\git reps\ArduinoRocket(TVC)\ArduinoRocket-TVC-\FlightAnalysisSoftware\FlightAnalysiisSoftware\obj\Debug\FlightAnalysiisSoftware.pdb

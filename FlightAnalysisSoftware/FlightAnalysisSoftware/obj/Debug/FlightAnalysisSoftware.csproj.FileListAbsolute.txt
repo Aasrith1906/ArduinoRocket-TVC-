@@ -1,0 +1,4 @@
+E:\Code\git reps\ArduinoRocket(TVC)\ArduinoRocket-TVC-\FlightAnalysisSoftware\FlightAnalysisSoftware\obj\Debug\FlightAnalysisSoftware.csprojAssemblyReference.cache
+E:\Code\git reps\ArduinoRocket(TVC)\ArduinoRocket-TVC-\FlightAnalysisSoftware\FlightAnalysisSoftware\obj\Debug\FlightAnalysisSoftware.Properties.Resources.resources
+E:\Code\git reps\ArduinoRocket(TVC)\ArduinoRocket-TVC-\FlightAnalysisSoftware\FlightAnalysisSoftware\obj\Debug\FlightAnalysisSoftware.csproj.GenerateResource.cache
+E:\Code\git reps\ArduinoRocket(TVC)\ArduinoRocket-TVC-\FlightAnalysisSoftware\FlightAnalysisSoftware\obj\Debug\FlightAnalysisSoftware.csproj.CoreCompileInputs.cache
