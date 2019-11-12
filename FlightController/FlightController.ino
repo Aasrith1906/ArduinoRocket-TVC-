@@ -1,3 +1,4 @@
+
 /* The following is the 2nd version of the arduino flight controller
  *  this code has been written by Aasrith Chennapragada
  *  first it tests whether all the hardware is working or not
@@ -43,15 +44,15 @@ float ax , ay , az , temp , gx , gy , gz;
 float pressure , altitude , altitude_base;
 
 #ifndef SERVO_TVC_X 
-  #define SERVO_TVC_X 6
+  #define SERVO_TVC_X 8
 #endif
 
 #ifndef SERVO_TVC_Z
-  #define SERVO_TVC_Z 5
+  #define SERVO_TVC_Z 9
 #endif
 
 #ifndef Start_button
-  #define Start_button 9
+  #define Start_button 10
 #endif
 
 #ifndef LED_RED
@@ -59,11 +60,11 @@ float pressure , altitude , altitude_base;
 #endif
 
 #ifndef LED_GREEN 
-  #define LED_GREEN 8
+  #define LED_GREEN 6
 #endif
 
 #ifndef PARACHUTE_RELAY_PIN
-  #define PARACHUTE_RELAY_PIN 4
+  #define PARACHUTE_RELAY_PIN 5
 #endif
 
 #ifndef CS_PIN 
